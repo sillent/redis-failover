@@ -1,6 +1,6 @@
 FROM golang:1.12-alpine
 
-WORKDIR /build
+WORKDIR /go/src/github.com/sillent/redis-failover
 COPY . .
 RUN build/build.sh
 
