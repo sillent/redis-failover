@@ -1,4 +1,4 @@
-package failover
+package main
 
 import (
 	"context"
@@ -9,24 +9,45 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-func main() {
+// ChangeService change K8s service pointing to new Redis Master pod
+// New master pod labled special lable
+func ChangeService(service string, hostname string, port int) (bool, error) {
+
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err.Error())
+		return false, nil
 	}
 
 	// clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err.Error())
+		return false, err
 	}
-	for {
-		pods, err := clientset.CoreV1().Services("").List(context.TODO(), metav1.ListOptions{})
+
+	svcs, err := clientset.CoreV1().Services(service).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return false, err
+	}
+	var svcList []byte
+	for _, it := range svcs.Items {
+		// fmt.Println(it.metav1.ListMeta.name)
+		svcList, err = it.Marshal()
 		if err != nil {
-			panic(err.Error())
+			return false, err
 		}
-		fmt.Println(pods)
+		fmt.Println("svclist: ", svcList)
 
 	}
 
+	return true, nil
+
+}
+
+func main() {
+	f, err := ChangeService("", "pod", 3530)
+	if err != nil {
+		panic(err)
+
+	}
+	fmt.Println(f)
 }
