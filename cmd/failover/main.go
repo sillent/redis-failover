@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -47,9 +48,10 @@ func ChangeService(service string, hostname string, port int) {
 			if err != nil {
 				panic(err)
 			}
-			fmt.Println("svclist: ", svcList)
+			log.Println("svcs: ", svcList)
 
 		}
+		time.Sleep(5 * time.Second)
 	}
 
 }
