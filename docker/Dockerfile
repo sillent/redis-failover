@@ -4,7 +4,7 @@ RUN apk add --no-cache git
 
 WORKDIR /go/src/github.com/sillent/redis-failover
 COPY . .
-RUN build/build.sh
+RUN docker/build.sh
 
 FROM alpine:latest
 RUN apk --no-cache add \

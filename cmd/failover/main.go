@@ -9,45 +9,52 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+/*
+func FindActiveMaster() string {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		panic(err)
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+
+}
+*/
+
 // ChangeService change K8s service pointing to new Redis Master pod
 // New master pod labled special lable
-func ChangeService(service string, hostname string, port int) (bool, error) {
+func ChangeService(service string, hostname string, port int) {
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		return false, nil
+		panic(err)
 	}
 
 	// clientset
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return false, err
+		panic(err)
 	}
 
 	svcs, err := clientset.CoreV1().Services(service).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		return false, err
+		panic(err)
 	}
-	var svcList []byte
-	for _, it := range svcs.Items {
-		// fmt.Println(it.metav1.ListMeta.name)
-		svcList, err = it.Marshal()
-		if err != nil {
-			return false, err
+	for {
+		var svcList []byte
+		for _, it := range svcs.Items {
+			// fmt.Println(it.metav1.ListMeta.name)
+			svcList, err = it.Marshal()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println("svclist: ", svcList)
+
 		}
-		fmt.Println("svclist: ", svcList)
-
 	}
-
-	return true, nil
 
 }
 
 func main() {
-	f, err := ChangeService("", "pod", 3530)
-	if err != nil {
-		panic(err)
+	ChangeService("", "pod", 3530)
 
-	}
-	fmt.Println(f)
 }
