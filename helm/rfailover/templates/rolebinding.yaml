@@ -1,3 +1,13 @@
-{{- if .Values.serviceAccount.create -}}
-apiVeresion: v1
+{{- if .Values.RBAC.enabled -}}
+apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
+metadata:
+    name: {{ .Values.RBAC.rb.name }}
+roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: Role
+    name: {{ .Values.RBAC.rolename }}
+subjects:
+    - kind: ServiceAccount
+      name: {{ .Values.serviceAccount.name }}
+{{- end -}}

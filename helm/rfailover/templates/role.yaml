@@ -1,6 +1,35 @@
-{{- if .Values.serviceAccount.create -}}
-apiVersion: v1
+{{- if .Values.RBAC.enabled -}}
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-    name: {{ include "rfailover."}}
+    name: {{ .Values.RBAC.rolename }}
+rules:
+    - apiGroups:
+        - ""
+      resources:
+        - pods
+        - pods/exec
+        - services
+        - endpoints
+        - configmaps
+        - secrets
+      verbs:
+        - create
+        - delete
+        - get
+        - list
+        - patch
+        - update
+    - apiGroups:
+        - "apps"
+      resources:
+        - statefulsets
+        - deployments
+      verbs:
+        - create
+        - delete
+        - list
+        - get
+        - update
+        - patch
 {{- end -}}
