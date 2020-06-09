@@ -15,3 +15,6 @@ build: clean
 
 docker: clean
 	docker build . -f docker/Dockerfile -t failover:latest
+
+helm: 
+	helm install -n $(ns) rfail ./helm/rfailover

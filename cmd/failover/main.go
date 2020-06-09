@@ -23,7 +23,7 @@ func FindActiveMaster() string {
 
 // ChangeService change K8s service pointing to new Redis Master pod
 // New master pod labled special lable
-func ChangeService(service string, hostname string, port int) {
+func ChangeService(ns string, hostname string, port int) {
 
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -36,27 +36,25 @@ func ChangeService(service string, hostname string, port int) {
 		panic(err)
 	}
 
-	svcs, err := clientset.CoreV1().Services(service).List(context.TODO(), metav1.ListOptions{})
+	svcs, err := clientset.CoreV1().Services(ns).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		panic(err)
 	}
 	for {
-		var svcList []byte
+		// var svcList []byte
+		log.Println("Count of SVCs: ", len(svcs.Items))
 		for _, it := range svcs.Items {
 			// fmt.Println(it.metav1.ListMeta.name)
-			svcList, err = it.Marshal()
-			if err != nil {
-				panic(err)
-			}
-			log.Println("svcs: ", svcList)
-
+			log.Println("Services: ", it.Spec.ClusterIP)
 		}
 		time.Sleep(5 * time.Second)
+
 	}
 
 }
 
 func main() {
-	ChangeService("", "pod", 3530)
+	// ChangeService("test-redis", "pod", 3530)
+	GetRedisMaster("rfs-redisfailover:26379", "mymaster")
 
 }
