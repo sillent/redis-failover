@@ -1,0 +1,3 @@
+{{- if .Values.serviceAccount.create -}}
+apiVeresion: v1
+kind: RoleBinding
