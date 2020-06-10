@@ -55,6 +55,15 @@ func ChangeService(ns string, hostname string, port int) {
 
 func main() {
 	// ChangeService("test-redis", "pod", 3530)
-	GetRedisMaster("rfs-redisfailover:26379", "mymaster")
+	for {
+		master, err := GetRedisMaster("rfs-redisfailover:26379", "mymaster", "")
+		if err != nil {
+			log.Panic("F*cking error: ", err)
+		}
+		redisCheckEndpoint(master, "test-redis", "rfs-redisfailover")
+		log.Printf("%s:%s\n", master.IP, master.PORT)
+
+		time.Sleep(5 * time.Second)
+	}
 
 }
