@@ -9,7 +9,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-func redisCheckEndpoint(senmaster RedisMaster, namespace string, redisMasterService string) {
+func redisCheckEndpoint(neededSentMaster RedisMaster, namespace string, redisMasterServiceName string) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		log.Println("'config' ", err)
@@ -25,8 +25,14 @@ func redisCheckEndpoint(senmaster RedisMaster, namespace string, redisMasterServ
 		log.Println("'getservice' ", err)
 		return
 	}
-	for _, s := range services.Items {
-		log.Println(s.ObjectMeta.GetName())
+	serviceItems := services.Items
+	for _, s := range serviceItems {
+		// log.Println(s.ObjectMeta.GetName())
+		curName := s.ObjectMeta.GetName()
+		// Searching desired service for working with him
+		if curName == redisMasterServiceName {
+
+		}
 
 	}
 
