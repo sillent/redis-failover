@@ -2,13 +2,24 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
+func inList(search string, where []v1.Service) bool {
+	for _, s := range where {
+		curN := s.ObjectMeta.GetName()
+		if curN == search {
+			return true
+		}
+	}
+	return false
+}
 func redisCheckEndpoint(neededSentMaster RedisMaster, namespace string, redisMasterServiceName string) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -25,15 +36,7 @@ func redisCheckEndpoint(neededSentMaster RedisMaster, namespace string, redisMas
 		log.Println("'getservice' ", err)
 		return
 	}
-	serviceItems := services.Items
-	for _, s := range serviceItems {
-		// log.Println(s.ObjectMeta.GetName())
-		curName := s.ObjectMeta.GetName()
-		// Searching desired service for working with him
-		if curName == redisMasterServiceName {
-
-		}
-
-	}
+	// serviceItems := services.Items
+	fmt.Println(services)
 
 }
