@@ -39,9 +39,11 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  enabled: false
+  enabled: true
   type: ClusterIP
-  port: 80
+  port: 6379
+  labels:
+    failover: redis
 
 ingress:
   enabled: false
@@ -67,6 +69,27 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
+
+config:
+  name: rfailover
+  content:
+    rfailover.yml: |
+      sentinel_service:
+        hostname: "rfs-redisfailover"
+        port: "26379"
+      sentinel_master_name: "mymaster"
+      redis_state_ful_set_name: "rfr-redisfailover"
+      service_label_name: "failover"
+
+volumes:
+  - configMap:
+      defaultMode: 420
+      name: rfailover
+    name: redisfailover
+
+mounts:
+  - name: redisfailover
+    mountPath: /etc/rfailover/
 
 nodeSelector: {}
 

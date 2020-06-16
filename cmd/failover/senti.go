@@ -19,8 +19,8 @@ func (r RedisMaster) MasterAsStr() string {
 	return fmt.Sprintf("%v:%v", r.IP, r.PORT)
 }
 
-// GetRedisMaster getting Redis Master Ip and other information from the Sentinel
-func GetRedisMaster(servicename string, mastername string, password string) (RedisMaster, error) {
+// getRedisMaster getting Redis Master Ip and other information from the Sentinel
+func getRedisMaster(servicename string, mastername string, password string) (RedisMaster, error) {
 	ctx, _ := context.WithCancel(context.Background())
 	senti := rediscli.NewSentinelClient(&rediscli.Options{
 		Addr:     servicename,
