@@ -8,6 +8,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	clientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
 )
 
@@ -31,6 +32,18 @@ func checkPodLabel(pod v1.Pod) bool {
 	}
 	return false
 }
+func unmarkingPod(pod v1.Pod, podL clientv1.PodInterface) {
+	log.Println("Labels in pod ", pod.GetName(), ": ", pod.GetLabels())
+	labels := pod.GetLabels()
+	delete(labels, "failover")
+	pod.SetLabels(labels)
+	podL.Update(context.TODO(), &pod, metav1.UpdateOptions{})
+	log.Println("Labels after deteling :", pod.GetLabels())
+	// return pod
+
+}
+
+// func markingPod(pod v1.Pod) v1.Pod
 func redisCheckEndpoint(neededSentMaster RedisMaster, namespace string, redisMasterServiceName string, redisstatefulset string) {
 	// configuration entity
 	config, err := rest.InClusterConfig()
@@ -46,13 +59,14 @@ func redisCheckEndpoint(neededSentMaster RedisMaster, namespace string, redisMas
 		return
 	}
 	// getting pods list entity
-	services, err := clientset.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{})
+	pods := clientset.CoreV1().Pods(namespace)
+	podLists, err := pods.List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		log.Println("'kubegetpods' ", err)
 		return
 	}
 
-	for _, p := range services.Items {
+	for _, p := range podLists.Items {
 		if strings.Contains(p.GetName(), redisstatefulset) {
 			if checkPodForIP(neededSentMaster, p) {
 				if checkPodLabel(p) {
@@ -60,13 +74,15 @@ func redisCheckEndpoint(neededSentMaster RedisMaster, namespace string, redisMas
 					log.Println("Pod is master and contain our label")
 				} else {
 					// Making label on master POD
-					markingPod(p)
+					// pod := markingPod(p)
+
 				}
 			} else {
 				if checkPodLabel(p) {
 					// Deleting label from non-master POD
 					log.Println("Pod not a master and contain our label")
-					unmarkingPod(p)
+					unmarkingPod(p, pods)
+
 				}
 			}
 		}
