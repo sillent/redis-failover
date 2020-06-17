@@ -16,7 +16,6 @@ type RFConfig struct {
 		Port     string `yaml:"port"`
 	} `yaml:"sentinel_service"`
 	Redis_Auth               string `yaml:"redis_auth,omitempty"`
-	Sentinel_Pass            string `yaml:"sentinel_password,omitempty"`
 	Sentinel_Master_Name     string `yaml:"sentinel_master_name,omitempty"`
 	Redis_State_Ful_Set_Name string `yaml:"redis_state_ful_set_name"`
 	Service_Label_Name       string `yaml:"service_label_name"`
@@ -28,8 +27,6 @@ const configPath = "/etc/rfailover/rfailover.yml"
 var (
 	// RedisAuth variables from configuration file
 	RedisAuth string
-	// SentinelPass var from configuration file
-	SentinelPass string
 	// SentinelMasterName var from configuration file
 	SentinelMasterName string
 	// SentinelService var from configuration file
@@ -53,14 +50,13 @@ func main() {
 	}
 	concatRedisSentinelHostname := fmt.Sprintf("%s:%s", rfC.Sentinel_Service.Hostname, rfC.Sentinel_Service.Port)
 	RedisAuth = rfC.Redis_Auth
-	SentinelPass = rfC.Sentinel_Pass
 	SentinelMasterName = rfC.Sentinel_Master_Name
 	SentinelService = concatRedisSentinelHostname
 	ServiceLabelName = rfC.Service_Label_Name
 	CheckTimeout = rfC.Check_Timeout
 
 	for {
-		master, err := getRedisMaster(concatRedisSentinelHostname, rfC.Sentinel_Master_Name, rfC.Sentinel_Pass)
+		master, err := getRedisMaster(concatRedisSentinelHostname, rfC.Sentinel_Master_Name)
 		if err != nil {
 			log.Panic("Cannot getting address of Redis Master Pod: ", err)
 		}

@@ -20,11 +20,11 @@ func (r RedisMaster) MasterAsStr() string {
 }
 
 // getRedisMaster getting Redis Master Ip and other information from the Sentinel
-func getRedisMaster(servicename string, mastername string, password string) (RedisMaster, error) {
+func getRedisMaster(servicename string, mastername string) (RedisMaster, error) {
 	ctx, _ := context.WithCancel(context.Background())
 	senti := rediscli.NewSentinelClient(&rediscli.Options{
 		Addr:     servicename,
-		Password: password,
+		Password: "",
 		DB:       0,
 	})
 	cmd := rediscli.NewSliceCmd("sentinel", "master", mastername)
