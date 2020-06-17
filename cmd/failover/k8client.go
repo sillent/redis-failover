@@ -32,15 +32,25 @@ func checkPodLabel(pod v1.Pod) bool {
 	}
 	return false
 }
+
+// Deleting label from pods which are not a master
 func unmarkingPod(pod v1.Pod, podL clientv1.PodInterface) {
-	log.Println("Labels in pod ", pod.GetName(), ": ", pod.GetLabels())
 	labels := pod.GetLabels()
-	delete(labels, "failover")
+	log.Println("Labels in pod ", pod.GetName(), ": ", labels)
+	delete(labels, ServiceLabelName)
 	pod.SetLabels(labels)
 	podL.Update(context.TODO(), &pod, metav1.UpdateOptions{})
 	log.Println("Labels after deteling :", pod.GetLabels())
-	// return pod
+}
 
+// Add a main rfailover label to pod which are master right now
+func markingPod(pod v1.Pod, podL clientv1.PodInterface) {
+	labels := pod.GetLabels()
+	log.Println("Labels in pod ", pod.GetName(), ": ", labels)
+	labels[ServiceLabelName] = "master"
+	pod.SetLabels(labels)
+	podL.Update(context.TODO(), &pod, metav1.UpdateOptions{})
+	log.Println("Labels after updating :", pod.GetLabels())
 }
 
 // func markingPod(pod v1.Pod) v1.Pod
@@ -48,22 +58,19 @@ func redisCheckEndpoint(neededSentMaster RedisMaster, namespace string, redisMas
 	// configuration entity
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Println("'kubeconfig' ", err)
-		return
+		log.Panic("'kubeconfig' ", err)
 	}
 
 	//clientset entity
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		log.Println("'kubeclientset' ", err)
-		return
+		log.Panic("'kubeclientset' ", err)
 	}
 	// getting pods list entity
 	pods := clientset.CoreV1().Pods(namespace)
 	podLists, err := pods.List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		log.Println("'kubegetpods' ", err)
-		return
+		log.Panic("'kubegetpods' ", err)
 	}
 
 	for _, p := range podLists.Items {
@@ -71,22 +78,19 @@ func redisCheckEndpoint(neededSentMaster RedisMaster, namespace string, redisMas
 			if checkPodForIP(neededSentMaster, p) {
 				if checkPodLabel(p) {
 					/// Pod with master IP and correctly labeling
-					log.Println("Pod is master and contain our label")
+					log.Printf("Pod %s is master and contain our label.", p.GetName())
 				} else {
 					// Making label on master POD
-					// pod := markingPod(p)
-
+					log.Printf("Pod %s is master and not contain master label. Marking...", p.GetName())
+					markingPod(p, pods)
 				}
 			} else {
 				if checkPodLabel(p) {
 					// Deleting label from non-master POD
-					log.Println("Pod not a master and contain our label")
+					log.Printf("Pod %s not a master and contain our label. Unmarking...", p.GetName())
 					unmarkingPod(p, pods)
-
 				}
 			}
 		}
-
 	}
-
 }

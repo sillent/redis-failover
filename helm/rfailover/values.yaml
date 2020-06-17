@@ -42,8 +42,9 @@ service:
   enabled: true
   type: ClusterIP
   port: 6379
+  name: redis
   labels:
-    failover: redis
+    failover: master
 
 ingress:
   enabled: false
@@ -80,6 +81,7 @@ config:
       sentinel_master_name: "mymaster"
       redis_state_ful_set_name: "rfr-redisfailover"
       service_label_name: "failover"
+      check_timeout: 2
 
 volumes:
   - configMap:
