@@ -1,4 +1,4 @@
-module github.com/sillent/redis-failover
+module github.com/sillent/rfailover
 
 go 1.14
 
